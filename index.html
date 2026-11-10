@@ -14,10 +14,29 @@
 .fv{filter:drop-shadow(0 0 3px #f5b800) drop-shadow(0 0 2px #f5b800)}
 .st{float:right;font-size:17px;color:#bbb;cursor:pointer;padding:0 2px}.st.on{color:#f5b800}
 .pb{margin-top:4px;padding:3px 8px;cursor:pointer}
+#tg,#lh{display:none}
+@media(max-width:700px){
+ #h{height:38px}#h b{font-size:14px}.leaflet-top{top:38px}
+ #p{left:56px;right:8px;max-width:none;top:46px;font-size:15px;padding:8px}
+ #q{width:100%;box-sizing:border-box;font-size:16px;padding:8px;margin-bottom:6px}
+ #tg{display:inline-block;font-size:14px;padding:6px 10px;margin-right:8px}
+ #f,#b{display:none}body.fo #f,body.fo #b{display:block;max-height:48vh;overflow-y:auto}
+ #b{margin-top:6px}#b button{font-size:14px;padding:6px 12px}
+ #f label{margin:7px 14px 7px 0;font-size:15px}
+ #c{display:inline-block;font-size:14px}
+ #lh{display:flex;align-items:center;justify-content:center;position:fixed;z-index:1200;left:0;right:0;bottom:0;height:46px;background:#1f3a5f;color:#fff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 -2px 6px #0004}
+ #l{display:none;top:auto;bottom:46px;left:0;right:0;width:auto;height:42vh;box-shadow:0 -2px 8px #0004;font-size:15px}
+ body.lo #l{display:block}
+ #l details>summary{padding:10px;font-size:15px}
+ #l .it{padding:11px 12px;font-size:15px}#l .it small{font-size:12px}
+ .st{font-size:26px;padding:0 6px}
+ .pb{padding:8px 14px;font-size:15px}.leaflet-popup-content{font-size:15px}
+}
 #l .em{padding:12px;color:#888}</style></head><body><div id="map"></div>
 <div id="h"><b>山口市安心快適住まいる商品券 取扱店舗マップ</b><small>R8/11/9現在 ・ 507店</small></div>
 <div id="l"></div>
-<div id="p"><input id="q" placeholder="店名・住所で検索"><div id="b"><label style="margin-right:8px;cursor:pointer"><input type="checkbox" id="fo"> ★お気に入りのみ(<span id="fn">0</span>)</label><button id="ba">全選択</button><button id="bn">全解除</button></div><div id="f"></div><div id="c"></div></div>
+<div id="lh"></div>
+<div id="p"><input id="q" placeholder="店名・住所で検索"><button id="tg">絞り込み ▾</button><span id="c0"></span><div id="b"><label style="margin-right:8px;cursor:pointer"><input type="checkbox" id="fo"> ★お気に入りのみ(<span id="fn">0</span>)</label><button id="ba">全選択</button><button id="bn">全解除</button></div><div id="f"></div><div id="c"></div></div>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -39,7 +58,8 @@ const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 let FV=new Set();try{FV=new Set(JSON.parse(localStorage.getItem("smileFav")||"[]"))}catch(e){}
 const key=s=>s.n+"|"+s.a;let favOnly=false;
 function saveFV(){try{localStorage.setItem("smileFav",JSON.stringify([...FV]))}catch(e){}}
-const icon=s=>L.divIcon({className:"mk"+(FV.has(key(s))?" fv":""),html:svg(s.g,FV.has(key(s))?22:18),iconSize:[22,22],iconAnchor:[11,11]});
+const MO=matchMedia("(max-width:700px)").matches;
+const icon=s=>{const f=FV.has(key(s)),z=(MO?24:18)+(f?4:0);return L.divIcon({className:"mk"+(f?" fv":""),html:svg(s.g,z),iconSize:[z,z],iconAnchor:[z/2,z/2]})};
 function popup(s,i){const d=document.createElement("div");
  d.innerHTML=`<b>${esc(s.n)}</b><br>${esc(s.a)}<br><small>${s.g} / ${s.d}地区</small><br><a target=_blank href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("山口県山口市"+s.a+" "+s.n)}">Googleマップで開く</a><br>`;
  const b=document.createElement("button");b.className="pb";const u=()=>b.textContent=FV.has(key(s))?"★ お気に入り解除":"☆ お気に入りに追加";u();
@@ -49,14 +69,14 @@ const mk=S.map((s,i)=>L.marker([s.lat,s.lon],{icon:icon(s)}).bindPopup(()=>popup
 const lg=L.layerGroup().addTo(map);
 function render(){const q=document.getElementById("q").value.trim().toLowerCase();lg.clearLayers();let n=0;
  S.forEach((s,i)=>{if(on.has(s.g)&&(!favOnly||FV.has(key(s)))&&(!q||(s.n+s.a).toLowerCase().includes(q))){lg.addLayer(mk[i]);n++}});
- document.getElementById("fn").textContent=FV.size;document.getElementById("c").textContent=n+" / "+S.length+" 店";renderList(q);}
+ document.getElementById("fn").textContent=FV.size;document.getElementById("lh").textContent=(document.body.classList.contains("lo")?"▼ リストを閉じる":"▲ 店舗リスト")+"（"+n+"件）";document.getElementById("c").textContent=n+" / "+S.length+" 店";renderList(q);}
 function renderList(q){const L_=document.getElementById("l");const open=new Set([...L_.querySelectorAll("details[open]")].map(d=>d.dataset.g));const first=!L_.children.length;L_.innerHTML="";let any=false;
  G.forEach(([g])=>{if(!on.has(g))return;const ix=S.map((s,i)=>i).filter(i=>S[i].g==g&&(!favOnly||FV.has(key(S[i])))&&(!q||(S[i].n+S[i].a).toLowerCase().includes(q))).sort((a,b)=>S[a].n.localeCompare(S[b].n,"ja"));
   if(!ix.length)return;any=true;const d=document.createElement("details");d.dataset.g=g;if(open.has(g)||q)d.open=true;
   d.innerHTML=`<summary>${svg(g,16)}${g}(${ix.length})</summary>`;
   ix.forEach(i=>{const e=document.createElement("div");e.className="it";e.innerHTML=`<span class="st${FV.has(key(S[i]))?" on":""}" title="お気に入り">${FV.has(key(S[i]))?"★":"☆"}</span>${esc(S[i].n)}<small>${esc(S[i].a)}</small>`;
    e.querySelector(".st").onclick=ev=>{ev.stopPropagation();toggleFav(i)};
-   e.onclick=()=>{map.flyTo([S[i].lat,S[i].lon],18,{duration:.8});map.once("moveend",()=>mk[i].openPopup());};d.appendChild(e)});
+   e.onclick=()=>{if(MO){document.body.classList.remove("lo");render()}map.flyTo([S[i].lat,S[i].lon],18,{duration:.8});map.once("moveend",()=>mk[i].openPopup());};d.appendChild(e)});
   L_.appendChild(d)});
  if(!any)L_.innerHTML='<div class="em">表示するジャンルがありません</div>';}
 const f=document.getElementById("f");
@@ -65,5 +85,7 @@ G.forEach(([g])=>{const c=S.filter(s=>s.g==g).length;const l=document.createElem
  l.firstChild.onchange=e=>{e.target.checked?on.add(g):on.delete(g);render()};f.appendChild(l)});
 function setAll(v){on.clear();if(v)G.forEach(g=>on.add(g[0]));f.querySelectorAll("input").forEach(c=>c.checked=v);render()}
 document.getElementById("ba").onclick=()=>setAll(true);document.getElementById("bn").onclick=()=>setAll(false);
-document.getElementById("fo").onchange=e=>{favOnly=e.target.checked;render()};document.getElementById("q").oninput=render;render();
+document.getElementById("fo").onchange=e=>{favOnly=e.target.checked;render()};document.getElementById("tg").onclick=()=>{document.body.classList.toggle("fo");document.getElementById("tg").textContent=document.body.classList.contains("fo")?"絞り込み ▴":"絞り込み ▾"};
+document.getElementById("lh").onclick=()=>{document.body.classList.toggle("lo");render()};
+document.getElementById("q").oninput=render;render();
 </script></body></html>
